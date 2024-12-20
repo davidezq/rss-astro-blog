@@ -1,5 +1,5 @@
 import rss from "@astrojs/rss";
-import { APIRoute } from "astro";
+import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 
 export const GET: APIRoute = async ({ params, request, site }) => {
@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ params, request, site }) => {
     description: "Un pequeño blog para implementar rsss",
     // Pull in your project "site" from the endpoint context
     // https://docs.astro.build/en/reference/api-reference/#site
-    site: site,
+    site: site ?? "https://www.google.com",
     // Array of `<item>`s in output xml
     // See "Generating items" section for examples using content collections and glob imports
     items: blogs.map((blog) => ({

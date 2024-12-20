@@ -1,11 +1,18 @@
 import rss from "@astrojs/rss";
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
+import MarkdownIt from "markdown-it";
+import sanitizeHtml from "sanitize-html";
+
+const parser = new MarkdownIt();
 
 export const GET: APIRoute = async ({ params, request, site }) => {
   const blogs = await getCollection("blog");
   return rss({
-    stylesheet: '/rss/styles.xsl',
+    xmlns: {
+      media: "http://search.yahoo.com/mrss/",
+    },
+    stylesheet: "/rss/styles.xsl",
     // `<title>` field in output xml
     title: "Fernando blog",
     // `<description>` field in output xml
@@ -18,8 +25,18 @@ export const GET: APIRoute = async ({ params, request, site }) => {
     items: blogs.map((blog) => ({
       title: blog.data.title,
       description: blog.data.description,
-      link: "/posts/"+ blog.slug,
+      link: "/posts/" + blog.slug,
       pubDate: blog.data.date,
+      content: sanitizeHtml(parser.render(blog.body), {
+        allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
+      }),
+      customData: `<media:content
+      type="image/${blog.data.image.format === "jpg" ? "jpeg" : "png"}"
+      width="${blog.data.image.width}"
+      height="${blog.data.image.height}"
+      medium="image"
+      url="${site + blog.data.image.src}" />
+  `,
     })),
     // (optional) inject custom xml
     customData: `<language>es-sv</language>`,
